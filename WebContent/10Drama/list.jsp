@@ -159,14 +159,19 @@
              	ResultSet rs = null;
              	
              	// 7. 쿼리문작성 할당
-             	String query = "SELECT * FROM `drama_info` ORDER BY `idx` DESC";
+             	String query = 
+             	"SELECT * FROM `drama_info` ORDER BY `idx` DESC";
+             	// 쿼리문의 ORDER BY 는 내림차순/올림차순 정렬을 지정함
+             	// DESC 는 내림차순, ASC는 올림차순
+             	// DESC (descendent), ASC(ascendent)
              	
              	// 8. DB 종류 클래스 등록하기 -> 해당 연결 드라이브 로딩!
              	Class.forName("com.mysql.jdbc.Driver");
              	// lib폴더의 jar파일과 연결!
              	
              	// 9. DB연결하기
-             	conn = DriverManager.getConnection(DB_URL,DB_USER,DB_PWD);
+             	conn = DriverManager
+             	.getConnection(DB_URL,DB_USER,DB_PWD);
              	
              	// 10. 성공메시지띄우기
              	out.println("DB연결 성공하였습니다!");
@@ -207,7 +212,11 @@
              				// "   <td>"+rs.getInt("idx")+"</td>"+
              				// 일련번호는 DB의 idx 기본키를 쓰지 않고
              				// 반복되는 동안 순번을 만들어서 사용한다!
-             				"   <td><a href='#'>"+
+             				"   <td><a href='modify.jsp?idx="+
+             				rs.getInt("idx")+
+             				"'>"+
+             				// 조회수정 페이지인 modify.jsp로 갈때
+             				// ?idx=유일키값 : Get방식으로 전송함!
              				rs.getString("dname")+"</a></td>"+
              				"   <td>"+rs.getString("actors")+"</td>"+
              				"   <td>"+rs.getString("broad")+"</td>"+
@@ -226,7 +235,7 @@
                             
             
              	
-             	// 11. 연결해제하기
+             	// 14. 연결해제하기
              	rs.close();
              	pstmt.close();
              	conn.close();

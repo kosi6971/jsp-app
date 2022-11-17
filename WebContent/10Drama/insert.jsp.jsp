@@ -10,8 +10,7 @@
         body{
             text-align: center;
         }
-        
-        body, input{
+        body, input {
         	font-size: 26px;
         }
         
