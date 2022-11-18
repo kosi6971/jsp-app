@@ -41,6 +41,20 @@
             // DB레코드결과변수
             String result = "";
             
+            // 페이징 변수
+            // 시작 레코드 번호 : limit 쿼리의 시작 번호 셋팅
+            int startNum = 0;
+          	// 페이지당 레코드 개수 : limit 쿼리의 개수 셋팅
+           	int onePageCnt = 3;
+          	// 전체 레코드 수
+          	int totalCnt = 0;
+          	// 리스트 그룹 수 : 전체 개수 / 페이지당 개수
+			int listGroup = 0;
+          	// 남은 레코드 수 : 리스트 그룹에서 남은 레코드 수
+          	int etcRecord = 0;
+          	// 페이징링크 코드 저장변수;
+          	String pgCode = "";
+            
             try{
          		
              	// DB와 연결하려면 해당 DB의 jar파일이 DB폴더의
@@ -158,9 +172,39 @@
              	// 6. 결과저장 객체
              	ResultSet rs = null;
              	
+             	/* 
+             		[ 페이징 기능 구현하기 ]
+             		1. 페이징 사용 이유 : 많은 데이터를 부분적으로 보이기
+             		-> 최신 데이터, 기독성, 페이지 및 쿼리의 거대함 해결
+             		
+             		2. 원리 : 한 페이지당 특정 레코드 수를 정하여 나누어서
+             		마치 페이지를 넘기는 것처럼 데이터를 모아서 본다
+             		
+             		3. 페이징 쿼리 :
+             			SELECT * FROM 테이블명 limit 시작 번호, 개수
+             			-> 단, 시작 번호는 0부터
+             			쿼리문 작성 시 물음표로 시작번호와 개수를 변수처리한다
+             			SELECT * FROM 테이블명 limit ?,?
+             		
+             		4.페이지 쿼리의 변수처리 : preparedStatement에서 한다
+             			시작번호와 개수를 변수로 만들어서 페이징 컨트롤한다
+             			
+             		5. 현재 페이지 정보 필요에 따라
+             		URL의 키값 쌍으로 생성한다
+             		ex) url?키=값
+             			url?pgnum=3
+             		=> 어디에 생성하나?
+             			리스트 하단의 페이지 이동번호 a링크에 생성한다
+             		
+             		6. 전체 페이지 수는 어떨게 구하나?
+             			게시물 전체 개수 / 페이지당 쿼리 개수(onePageCnt)
+             			-> 게시물이 넘칠 경우를 위해 나머지 연산자로 나머지가 있으면
+             			다음 페이지까지 표시한다 
+             	*/
+             	
              	// 7. 쿼리문작성 할당
              	String query = 
-             	"SELECT * FROM `drama_info` ORDER BY `idx` DESC";
+             	"SELECT * FROM `drama_info` ORDER BY `idx` DESC LIMIT ?,?";
              	// 쿼리문의 ORDER BY 는 내림차순/올림차순 정렬을 지정함
              	// DESC 는 내림차순, ASC는 올림차순
              	// DESC (descendent), ASC(ascendent)
@@ -183,13 +227,45 @@
              	// - 쿼리문을 DB에 보낼 상태완료!
              	// - 중간에 쿼리문에 넣을 값을 추가할 수 있음!
              	
-             	// 12. 쿼리를 DB에 전송하여 실행후 결과집합(결과셋)을 가져옴!
+             	/* 
+             		[ 페이징 변수처리 전 페이지 번호하기 ]
+             	*/
+             	// 페이지번호 가져오기
+             	String pgNum = request.getParameter("pgnum");
+             	out.println("pgnum : " + pgNum + "<br>");
+             	
+             	// 파라미터 형변환 변수
+             	int pageSeq = 1; // 기본값 1(파라미터가 없으면 1이 들어감)
+             	
+             	// 파라미터가 있으면 시작값 처리하기
+             	if(pgNum != null){ // null이 아니면
+             		// 파라미터 형변환
+             		try{
+             			pageSeq = Integer.parseInt(pgNum);
+             		}
+             		catch(NumberFormatException ex){
+             			out.println("파라미터 숫자가 아닙니다");
+             			pageSeq = 1;
+             		}
+             		// 시작 번호 계산하기
+             		startNum = onePageCnt * (pageSeq-1);
+             	}
+             	
+             	/* 
+             		12. 페이지 변수 처리하기
+             	*/
+             	// limit 쿼리의 시작 번호 셋팅
+             	pstmt.setInt(1, startNum);
+             	// limit 쿼리의 개수 셋팅
+             	pstmt.setInt(2, onePageCnt);
+             	
+             	// 13. 쿼리를 DB에 전송하여 실행후 결과집합(결과셋)을 가져옴!
              	// ResultSet객체는 DB에서 쿼리결과를 저장하는 객체임!
              	rs = pstmt.executeQuery();
              	// executeQuery() 쿼리실행 메서드
              	
           
-             	// 13. 저장된 결과집합의 레코드 수 만큼 돌면서 코드만들기!
+             	// 14. 저장된 결과집합의 레코드 수 만큼 돌면서 코드만들기!
              	// 돌아주는 제어문은? while(조건){실행문}
              	// 레코드 유무 체크 메서드는? next()
              	// rs는 ResultSet 객체임!!!
@@ -230,12 +306,56 @@
              		
              	} //////////// while //////////////
              	
-            // 결과화면출력 	
-//    out.println(result);
+            	// 결과화면출력 	
+				//    out.println(result);
                             
-            
+            	/* 
+            		15. 페이징 링크 생성하기
+            		----------------------------------------------
+            		1) 시작 레코드 번호 : startNum 
+                  	2) 페이지당 레코드 개수 : onePageCnt 
+                  	3) 전체 레코드 수 : totalCnt 
+                  	4) 리스트 그룹 수 : listGroup (전체 개수 / 페이지당 개수)
+                  	5) 남은 레코드 수 : etcRecord 
+                  	6) 페이징링크 코드 저장변수 : pgCode 
+            	*/
+            	// 15-1. 전체 레코드 수 구하기
+            	// 레코드 수 구하기 쿼리
+            	String cntQuery = "SELECT COUNT(*) FROM `drama_info`";
+                // 쿼리를 preparedStatement에 넣기
+                PreparedStatement pstmt2 = conn.prepareStatement(cntQuery);
+                // 쿼리 실행 -> 개수 정보를 리턴 받아 ResultSet에 담는다
+                ResultSet rs2 = pstmt2.executeQuery();
+                
+                // 개수 결과가 있으면 가져오기
+                if(rs2.next()){
+                	totalCnt = rs2.getInt(1);
+                	// getInt(1)은 정수형 결과를 가져온다
+                }
+                
+                //15-2. 리스트 그룹 수
+                listGroup = totalCnt / onePageCnt;
+                
+                //15-3. 남은 레코드 수
+                etcRecord = totalCnt % onePageCnt;
+                
+                // 한계 수 체크 있고 없고에 따라 1개 차이난다
+                int limit = etcRecord==0?listGroup:listGroup+1;
+                
+                // 15-4. 페이징 링크 코드 만들기
+                for(int i = 0 ; i<limit ; i++){
+                	pgCode += "<a href='list.jsp?pgnum=" + (i+1) + "'>"+ (i+1) + "</a>";
+                	if(i != limit-1) pgCode += " | ";
+                }
+                
+                // 화면 찍기
+                out.println("<h1>");
+                out.println("전체 레코드 수 : " + totalCnt + "<br>");
+                out.println("리스트 그룹 수 : " + listGroup + "<br>");
+                out.println("남은 레코드 수 : " + etcRecord + "<br>");
+                out.println("</h1>");
              	
-             	// 14. 연결해제하기
+             	// 16. 연결해제하기
              	rs.close();
              	pstmt.close();
              	conn.close();
@@ -262,7 +382,7 @@
             <tfoot>
                 <tr>
                     <td colspan="7">
-                        ◀ 1 | <a href="#">2</a> | <a href="#">3</a> | <a href="#">4</a> | <a href="#">5</a> | <a href="#">6</a> | <a href="#">7</a> | <a href="#">8</a> | <a href="#">9</a> | <a href="#">10</a> ▶
+                        ◀ <%=pgCode %> ▶
                     </td>
                     <!-- 
                         colspan 속성은 기본적으로 td를 합칠때 사용함
@@ -276,7 +396,7 @@
         </table>
         
         <!-- 입력페이지 이동버튼 -->
-        <div class="gubun" onclick="location.href='insert.jsp'" 
+        <div class="gubun" onclick="location.href='insert.jsp'"
         style="text-align:right;margin-bottom:50px;">
         	<button style="font-size:24px;">입력하기</button>
         </div>

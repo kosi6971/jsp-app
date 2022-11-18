@@ -76,6 +76,8 @@
         	// 분기하기(true일경우)
         	if(conf){
         		// 삭제처리 페이지로 보내기!
+        		location.href="process/del.jsp?idx="+$(this).attr("data-idx");
+        		// 클릭된버튼의 data-idx 속성값을 뒤에 붙여서 보낸다!
         	} ////// if //////////
         	
         }); /////// click ///////////////
@@ -147,8 +149,7 @@
          	// lib폴더의 jar파일과 연결!
          	
          	// 9. DB연결하기
-         	conn = DriverManager
-         	.getConnection(DB_URL,DB_USER,DB_PWD);
+         	conn = DriverManager.getConnection(DB_URL,DB_USER,DB_PWD);
          	
          	// 10. 성공메시지띄우기
          	out.println("DB연결 성공하였습니다!");
@@ -159,6 +160,7 @@
          	// prepareStatement(쿼리문변수)
          	// - 쿼리문을 DB에 보낼 상태완료!
          	// - 중간에 쿼리문에 넣을 값을 추가할 수 있음!
+         	
          	
          	// 12. 쿼리에 추가할 데이터 셋팅하기!
          	// -> 파라미터값이 숫자지만 String이므로 형변환해야한다
@@ -211,7 +213,8 @@
    
    %>
    
-   <form action="process/mod.jsp" method="post" id="dform">
+   <!-- 수정처리 페이지인 mod.jsp에 idx값을 전달힌디 -->
+   <form action="process/mod.jsp?idx=<%=idnum %>" method="post" id="dform">
        
        <label for="dname">드라마명</label>
        <input type="text" name="dname" id="dname" maxlength="100" value="<%=dname%>">
@@ -230,7 +233,7 @@
        <!-- 수정하기 버튼 -->
        <input type="submit" value="수정하기" id="mbtn">
        <!-- 삭제하기 버튼 -->
-       <input type="submit" value="삭제하기" id="dbtn">
+       <input type="submit" value="삭제하기" id="dbtn" data-idx="<%=idnum %>">
        <!-- 리스트가기 버튼 -->
        <input type="submit" value="리스트가기" id="lbtn">
        <!--
