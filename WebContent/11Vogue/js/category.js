@@ -15,7 +15,7 @@ console.log(pm.indexOf("?"));
 
 if (pm.indexOf("?") === -1) {
     alert("비정상적인 접근입니다~!");
-    location.href = "index.html";
+    location.href = "index.jsp";
     // 첫페이지로 돌아감!
 } //////// if ///////////
 
