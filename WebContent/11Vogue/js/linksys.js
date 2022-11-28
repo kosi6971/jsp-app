@@ -52,6 +52,9 @@ $(() => {
         let atxt = $(this).text().trim();
         // console.log(atxt);
 
+        // 로그아웃 예외 처리하기(안하면 404새창 뜸)
+        if(atxt === "로그아웃") return; // 여기서 나감
+
         // 2. 이동할 페이지 주소 할당하기
         let url;
         switch (atxt) {
