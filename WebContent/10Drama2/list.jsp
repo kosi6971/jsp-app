@@ -56,8 +56,7 @@
 		<!-- 4.테이블 하단부분-->
 		<tfoot>
 			<tr>
-				<td colspan="7">◀ <%= licon.setPaging()%> ▶
-				</td>
+				<td colspan="7">◀ <%= licon.setPaging()%> ▶</td>
 			</tr>
 		</tfoot>
 	</table>

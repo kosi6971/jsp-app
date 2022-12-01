@@ -1,4 +1,4 @@
-package drama;
+package vogue;
 
 import common.JDBConnector;
 import common.Paging;
@@ -16,7 +16,7 @@ public class ListController {
 	JDBConnector jdbc = new JDBConnector();
 
 	// 페이징 클래스 생성
-	Paging pg = new Paging("drama_info");
+	Paging pg = new Paging("member");
 
 	// 페이징 DTO 클래스 생성
 	PagingDTO pgdto = new PagingDTO();
@@ -34,7 +34,7 @@ public class ListController {
 		try {
 
 			// 7. 쿼리문작성 할당
-			String query = "SELECT * FROM `drama_info` ORDER BY `idx` DESC LIMIT ?,?";
+			String query = "SELECT * FROM `member` ORDER BY`name` ASC LIMIT ?,?";
 
 			// 11. 쿼리문 연결 사용준비하기
 			jdbc.pstmt = jdbc.conn.prepareStatement(query);
@@ -96,13 +96,13 @@ public class ListController {
 						// 조회수정 페이지인 modify.jsp로 갈때
 						// ?idx=유일키값 : Get방식으로 전송함!
 						// pgnum=현재페이지번호 : 추가전송!
-						jdbc.rs.getString("dname") + "</a></td>" + "   <td>" + 
-						jdbc.rs.getString("actors") + "</td>" + "   <td>" + 
-						jdbc.rs.getString("broad") + "</td>" + "   <td>" + 
-						jdbc.rs.getString("gubun") + "</td>" + "   <td>" + 
-						jdbc.rs.getString("stime") + "</td>" + "   <td>" + 
-						jdbc.rs.getString("total") + "</td>" + "</tr>";
-
+						// 순서대로 : 아이디, 이름, 성별, 이메일1, 이메일2, 권한
+						jdbc.rs.getString("mid") + "</a></td>" + "   <td>" + 
+						jdbc.rs.getString("name") + "</td>" + "   <td>" + 
+						jdbc.rs.getString("gen") + "</td>" + "   <td>" + 
+						jdbc.rs.getString("email1") + "@" +
+						jdbc.rs.getString("email2") + "</td>" + "   <td>" + 
+						jdbc.rs.getString("auth") + "</td>" + "</tr>";
 				// 일련번호증가
 				listNum++;
 
