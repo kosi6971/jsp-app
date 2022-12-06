@@ -69,7 +69,7 @@
 		String pgNum = request.getParameter("pgnum");
 		if(pgNum==null) pgNum="1";
 		
-		// 검색어 관련 파라미터 받기(만약 없으면 null값으로 셋팅됨)
+		// 검색어관련 파라미터 받기(만약없으면 null값으로 셋팅됨!)
 		String pmCol = request.getParameter("col");
 		String pmKey = request.getParameter("key");
 		
@@ -83,7 +83,7 @@
         <!--테이블 본문-->
         <!--tbody는 일반 테이블에 안써도 출력됨-->
         <tbody>
-            <%=listcon.setList(pgNum, pmCol, pmKey)%>
+            <%=listcon.setList(pgNum,pmCol,pmKey)%>
         </tbody>
         
         <!--테이블 끝줄-->
@@ -95,8 +95,8 @@
    
     </table>
 
-	<!-- 검색 박스 -->
-	<div class="gubun" style="text-align:center;padding:20px 0;">
+	<!-- 검색박스 -->	
+    <div class="gubun" style="text-align:center;padding:20px 0;">
 		<!-- 검색항목 선택 select박스 -->
 		<select name="selcol" id="selcol">
 			<option value="name">이름</option>
@@ -105,7 +105,7 @@
 		<input type="text" name="keyword" id="keyword">
 		<button id="sbtn">검색하기</button>
 	</div>
-	
+
 
     <!--구분테이블 박스-->
     <div class="gubun">
@@ -123,19 +123,45 @@
     <script src="../js/jquery-3.6.1.min.js"></script>
     <script>
     $(()=>{ ///////// jQB ///////////////
+    	
+    	// 파라미터 가져오기 메서드 //////////
+    	$.urlParam = function(name) {
+		    let results = new RegExp('[\?&]' 
+		    		+ name + '=([^&#]*)').exec(window.location.href);
+		    if (results==null) {
+		        return null;
+		    } else {
+		        return results[1] || 0;
+		    }
+		} ///////// urlParam 함수 ////////
+    	
+
+    	// 검색요소 변수할당
+    	let selcol = $("#selcol");
+    	let keyword = $("#keyword");
+    	
+    	// 넘어온 파라미터에 key값이 있으면!
+    	if($.urlParam("key")!= null){
+    		// val(값) - 선택요소에 값 셋팅!
+    		selcol.val($.urlParam("col"));
+    		keyword.val(decodeURIComponent($.urlParam("key")));
+    		// decodeURIComponent() -> 2byte 한글 안깨지게 처리
+    	}
+    	
     	// 1. 검색버튼 클릭시 처리하기
     	$("#sbtn").click(function(){
     		// 1-1.검색항목 읽어오기
-    		let col = $("#selcol").val();
+    		let col = selcol.val();
     		// 1-2.검색키워드 읽어오기
-    		let key = $("#keyword").val();
+    		let key = keyword.val();
     		// 1-3.검색어관련 파라미터로 list페이지 다시호출하기
     		// 검색항목 : col=값 / 검색어 : key=값
-    		location.href = "list.jsp?pgnum=<%=pgNum%>&col="+col+"&key="+key;
+    		location.href = 
+    			"list.jsp?pgnum=<%=pgNum%>&col="+col+"&key="+key;
     		
     	}); ///////// click ////////////
     	
-    	// 3. 로그아웃 클릭시 로그아웃하기
+    	// 2. 로그아웃 클릭시 로그아웃하기
         // 주의: linksys.js에 "로그아웃"예외처리필요!
         // 이것을 안해주면 sns중 하나로 분류되어 404새창이 뜸!
         $("#lobtn").click(function(){
